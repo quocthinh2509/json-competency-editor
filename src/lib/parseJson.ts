@@ -17,18 +17,27 @@ export async function parseAndValidate(file: File): Promise<JsonData> {
     throw new Error('File không hợp lệ: không parse được JSON');
   }
 
-  // 4. Phải là array
+  // 4. Đảm bảo là array nhân viên
+  let finalData: any[];
   if (!Array.isArray(parsed)) {
-    throw new Error('JSON phải là array nhân viên');
+    const obj = parsed as Record<string, unknown>;
+    // Nếu là single object, kiểm tra xem có phải 1 nhân viên không (có email và results)
+    if (obj && typeof obj.email === 'string' && Array.isArray(obj.results)) {
+      finalData = [obj];
+    } else {
+      throw new Error('File không hợp lệ: JSON phải là danh sách nhân viên hoặc 1 nhân viên mẫu');
+    }
+  } else {
+    finalData = parsed;
   }
 
-  if (parsed.length === 0) {
+  if (finalData.length === 0) {
     throw new Error('File không có dữ liệu nhân viên nào');
   }
 
   // 5. Validate từng employee
-  for (let i = 0; i < parsed.length; i++) {
-    const emp = parsed[i] as Record<string, unknown>;
+  for (let i = 0; i < finalData.length; i++) {
+    const emp = finalData[i] as Record<string, unknown>;
 
     if (!emp.email || typeof emp.email !== 'string') {
       throw new Error(`Nhân viên #${i + 1}: thiếu trường "email"`);
@@ -62,5 +71,5 @@ export async function parseAndValidate(file: File): Promise<JsonData> {
     }
   }
 
-  return parsed as JsonData;
+  return finalData as JsonData;
 }

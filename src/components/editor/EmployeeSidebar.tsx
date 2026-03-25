@@ -12,6 +12,7 @@ export default function EmployeeSidebar() {
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
+    if (!Array.isArray(data)) return [];
     const q = search.toLowerCase();
     return data.map((emp, idx) => ({ emp, idx })).filter(({ emp }) =>
       emp.full_name.toLowerCase().includes(q) || emp.email.toLowerCase().includes(q)
