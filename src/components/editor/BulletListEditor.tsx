@@ -48,7 +48,16 @@ export default function BulletListEditor({
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') cancelAdd();
-    if (e.key === 'Enter' && e.ctrlKey) submitAdd();
+    if (e.key === 'Enter') {
+      if (e.ctrlKey) {
+        // Ctrl+Enter: New line (default behavior)
+        return;
+      } else {
+        // Enter: Submit
+        e.preventDefault();
+        submitAdd();
+      }
+    }
   };
 
   return (
@@ -97,7 +106,7 @@ export default function BulletListEditor({
                 onChange={(e) => setNewText(e.target.value)}
                 onBlur={submitAdd}
                 onKeyDown={handleKeyDown}
-                placeholder="Nhập nội dung... (Ctrl+Enter để lưu, Escape để hủy)"
+                placeholder="Nhập nội dung... (Enter để lưu, Ctrl+Enter để xuống dòng, Escape để hủy)"
                 className="flex-1 bg-transparent text-white text-sm resize-none outline-none placeholder:text-white/30 min-h-[60px] leading-relaxed"
                 rows={3}
               />

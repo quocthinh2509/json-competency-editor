@@ -39,7 +39,16 @@ export default function BulletItem({ text, onUpdate, onDelete, accentColor = 'bl
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') cancel();
-    if (e.key === 'Enter' && e.ctrlKey) save();
+    if (e.key === 'Enter') {
+      if (e.ctrlKey) {
+        // Ctrl+Enter: New line
+        return;
+      } else {
+        // Enter: Save
+        e.preventDefault();
+        save();
+      }
+    }
   };
 
   const dotColor: Record<string, string> = {
@@ -58,6 +67,7 @@ export default function BulletItem({ text, onUpdate, onDelete, accentColor = 'bl
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={handleKeyDown}
+          placeholder="Nhập nội dung... (Enter để lưu, Ctrl+Enter để xuống dòng, Escape để hủy)"
           className="flex-1 bg-transparent text-white text-sm resize-none outline-none min-h-[60px] leading-relaxed"
           rows={3}
         />
