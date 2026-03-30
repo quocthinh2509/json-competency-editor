@@ -37,12 +37,23 @@ export default function BulletItem({ text, onUpdate, onDelete, accentColor = 'bl
     setEditing(false);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Escape') cancel();
     if (e.key === 'Enter') {
-      if (e.ctrlKey) {
-        // Ctrl+Enter: New line
-        return;
+      if (e.ctrlKey || e.shiftKey) {
+        // Ctrl+Enter or Shift+Enter: Manually insert newline
+        e.preventDefault();
+        const start = e.currentTarget.selectionStart;
+        const end = e.currentTarget.selectionEnd;
+        const val = e.currentTarget.value;
+        setDraft(val.substring(0, start) + "\n" + val.substring(end));
+        
+        // Restore cursor position
+        setTimeout(() => {
+          if (textareaRef.current) {
+            textareaRef.current.selectionStart = textareaRef.current.selectionEnd = start + 1;
+          }
+        }, 0);
       } else {
         // Enter: Save
         e.preventDefault();
