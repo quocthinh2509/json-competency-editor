@@ -1,15 +1,18 @@
 'use client';
 
+import { useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Download, Upload, FileJson2 } from 'lucide-react';
+import { Download, Upload, FileJson2, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEditorStore } from '@/store/editorStore';
 import { downloadJson } from '@/lib/exportJson';
+import { parseAndValidate } from '@/lib/parseJson';
 import { toast } from 'sonner';
 
 export default function TopBar() {
-  const { data, filename, setFilename, reset } = useEditorStore();
+  const { data, filename, setFilename, appendData, reset } = useEditorStore();
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleExport = () => {
     let finalName = filename;
@@ -23,6 +26,38 @@ export default function TopBar() {
   const handleReset = () => {
     reset();
     router.push('/');
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const fileArray = Array.from(files);
+    const jsonFiles = fileArray.filter(f => f.name.endsWith('.json'));
+    
+    if (jsonFiles.length === 0) {
+      toast.error('Chỉ hỗ trợ file .json');
+      return;
+    }
+
+    try {
+      let importedData: any[] = [];
+      for (const file of jsonFiles) {
+        const data = await parseAndValidate(file);
+        importedData = [...importedData, ...data];
+      }
+      
+      appendData(importedData);
+      toast.success(`Đã import thêm ${importedData.length} nhân viên`);
+      // Reset input value to allow picking same file again
+      e.target.value = '';
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
   };
 
   return (
@@ -47,14 +82,33 @@ export default function TopBar() {
         <span className="text-white/30 text-xs">· {data.length} nhân viên</span>
       </div>
 
-      <Button
-        onClick={handleExport}
-        size="sm"
-        className="bg-teal-600 hover:bg-teal-500 text-white gap-2"
-      >
-        <Download className="w-4 h-4" />
-        Export JSON
-      </Button>
+      <div className="flex items-center gap-2">
+        <input
+          type="file"
+          ref={fileInputRef}
+          multiple
+          accept=".json"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+        <Button
+          onClick={handleImportClick}
+          variant="outline"
+          size="sm"
+          className="border-white/10 text-white/60 hover:text-white hover:bg-white/5 gap-2"
+        >
+          <PlusCircle className="w-4 h-4" />
+          Import JSON
+        </Button>
+        <Button
+          onClick={handleExport}
+          size="sm"
+          className="bg-teal-600 hover:bg-teal-500 text-white gap-2"
+        >
+          <Download className="w-4 h-4" />
+          Export JSON
+        </Button>
+      </div>
     </header>
   );
 }

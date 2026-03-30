@@ -26,6 +26,8 @@ interface EditorState {
   addCourse: (employeeIdx: number, competencyId: number, course: Course) => void;
   updateCourse: (employeeIdx: number, competencyId: number, courseIdx: number, course: Course) => void;
   deleteCourse: (employeeIdx: number, competencyId: number, courseIdx: number) => void;
+  // Actions - append
+  appendData: (newData: JsonData) => void;
   setFilename: (filename: string) => void;
 
 
@@ -105,6 +107,9 @@ export const useEditorStore = create<EditorState>((set) => ({
       if (ci !== -1) newData[employeeIdx].results[ci].courses.splice(courseIdx, 1);
       return { data: newData };
     }),
+
+  appendData: (newData) =>
+    set((state) => ({ data: [...state.data, ...newData] })),
 
   setFilename: (filename) => set({ filename }),
 

@@ -15,17 +15,26 @@ export default function UploadZone() {
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleFile = useCallback(
-    async (file: File) => {
-      if (!file.name.endsWith('.json')) {
+  const handleFiles = useCallback(
+    async (files: FileList | File[]) => {
+      const fileArray = Array.from(files);
+      const jsonFiles = fileArray.filter(f => f.name.endsWith('.json'));
+      
+      if (jsonFiles.length === 0) {
         toast.error('Chỉ hỗ trợ file .json');
         return;
       }
+
       setLoading(true);
       try {
-        const data = await parseAndValidate(file);
-        loadData(data, file.name);
-        toast.success(`Đã tải "${file.name}" — ${data.length} nhân viên`);
+        let allData: any[] = [];
+        for (const file of jsonFiles) {
+          const data = await parseAndValidate(file);
+          allData = [...allData, ...data];
+        }
+        
+        loadData(allData, jsonFiles[0].name);
+        toast.success(`Đã tải ${jsonFiles.length} file — Tổng ${allData.length} nhân viên`);
         router.push('/editor');
       } catch (err) {
         toast.error((err as Error).message);
@@ -40,15 +49,17 @@ export default function UploadZone() {
     (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
       setDragging(false);
-      const file = e.dataTransfer.files[0];
-      if (file) handleFile(file);
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleFiles(e.dataTransfer.files);
+      }
     },
-    [handleFile]
+    [handleFiles]
   );
 
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleFile(file);
+    if (e.target.files && e.target.files.length > 0) {
+      handleFiles(e.target.files);
+    }
   };
 
   return (
@@ -97,6 +108,7 @@ export default function UploadZone() {
         id="file-input"
         type="file"
         accept=".json"
+        multiple
         className="hidden"
         onChange={onInputChange}
       />
