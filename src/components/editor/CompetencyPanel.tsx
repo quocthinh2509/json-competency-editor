@@ -45,6 +45,7 @@ export default function CompetencyPanel() {
 
           </div>
           <ScoreSlider
+            key={`score-${compId}`}
             value={result.score}
             onChange={(val) => updateScore(empIdx, compId, val)}
           />
@@ -55,14 +56,16 @@ export default function CompetencyPanel() {
         {/* Bullet sections */}
         <div className="space-y-3">
           <BulletListEditor
+            key={`strengths-${compId}`}
             title="Điểm mạnh"
             items={result.strengths}
             onAdd={(text) => addBullet(empIdx, compId, 'strengths', text)}
             onUpdate={(idx, text) => updateBullet(empIdx, compId, 'strengths', idx, text)}
             onDelete={(idx) => deleteBullet(empIdx, compId, 'strengths', idx)}
-            accentColor="green"
+            accentColor="emerald"
           />
           <BulletListEditor
+            key={`limitations-${compId}`}
             title="Hạn chế"
             items={result.limitations}
             onAdd={(text) => addBullet(empIdx, compId, 'limitations', text)}
@@ -71,6 +74,7 @@ export default function CompetencyPanel() {
             accentColor="red"
           />
           <BulletListEditor
+            key={`development-${compId}`}
             title="Cơ hội phát triển"
             items={result.development_opportunities}
             onAdd={(text) => addBullet(empIdx, compId, 'development_opportunities', text)}
@@ -88,6 +92,7 @@ export default function CompetencyPanel() {
             Khóa học đề xuất ({result.courses.length})
           </h3>
           <CourseTable
+            key={`courses-${compId}`}
             courses={result.courses}
             onAdd={(c) => addCourse(empIdx, compId, c)}
             onUpdate={(idx, c) => updateCourse(empIdx, compId, idx, c)}
